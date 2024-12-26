@@ -24,10 +24,12 @@ func TestLogout(t *testing.T) {
 	bot.LogoutCallBack = func(bot *Bot) {
 		t.Log("logout")
 	}
-	bot.MessageHandler = func(msg *Message) {
-		if msg.IsText() && msg.Content == "logout" {
-			if err := bot.Logout(); err != nil {
-				t.Error(err)
+	bot.MessageHandler = func(msg interface{}) {
+		if message, ok := msg.(*Message); ok { // 使用指针类型断言
+			if message.IsText() && message.Content == "logout" {
+				if err := bot.Logout(); err != nil {
+					t.Error(err)
+				}
 			}
 		}
 	}
@@ -40,10 +42,12 @@ func TestLogout(t *testing.T) {
 
 func TestMessageHandle(t *testing.T) {
 	bot := DefaultBot(Desktop)
-	bot.MessageHandler = func(msg *Message) {
-		if msg.IsText() && msg.Content == "ping" {
-			if _, err := msg.ReplyText("pong"); err != nil {
-				t.Error(err)
+	bot.MessageHandler = func(msg interface{}) {
+		if message, ok := msg.(*Message); ok { // 使用指针类型断言
+			if message.IsText() && message.Content == "ping" {
+				if _, err := message.ReplyText("pong"); err != nil {
+					t.Error(err)
+				}
 			}
 		}
 	}
@@ -124,12 +128,15 @@ func TestPinUser(t *testing.T) {
 
 func TestSender(t *testing.T) {
 	bot := DefaultBot(Desktop)
-	bot.MessageHandler = func(msg *Message) {
-		if msg.IsSendByGroup() {
-			fmt.Println(msg.SenderInGroup())
-		} else {
-			fmt.Println(msg.Sender())
+	bot.MessageHandler = func(msg interface{}) {
+		if message, ok := msg.(*Message); !ok {
+			if message.IsSendByGroup() {
+				fmt.Println(message.SenderInGroup())
+			} else {
+				fmt.Println(message.Sender())
+			}
 		}
+
 	}
 	if err := bot.Login(); err != nil {
 		t.Error(err)

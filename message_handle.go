@@ -6,7 +6,7 @@ import (
 )
 
 // MessageHandler 消息处理函数
-type MessageHandler func(msg *Message)
+type MessageHandler func(msg interface{})
 
 // MessageDispatcher 消息分发处理接口
 // 跟 DispatchMessage 结合封装成 MessageHandler
@@ -233,8 +233,10 @@ func (m *MessageMatchDispatcher) OnRecalled(handlers ...MessageContextHandler) {
 
 // AsMessageHandler 将MessageMatchDispatcher转换为MessageHandler
 func (m *MessageMatchDispatcher) AsMessageHandler() MessageHandler {
-	return func(msg *Message) {
-		m.Dispatch(msg)
+	return func(msg interface{}) {
+		if message, ok := msg.(*Message); ok { // 使用指针类型断言
+			m.Dispatch(message) // 直接使用指针，不需要再取地址
+		}
 	}
 }
 
